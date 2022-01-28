@@ -15,7 +15,7 @@ namespace ConcurrencyProblem
         [Required]
         public string ColB { get; set; }
 
-        public int MySeq { get; set; }
+        public int? MySeq { get; set; }
 
     }
 }

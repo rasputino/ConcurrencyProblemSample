@@ -19,7 +19,7 @@ namespace ConcurrencyProblem
             Console.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}]");
         }
 
-        public void SetMySeqValue(MyDbContext db)
+        public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks)
         {
             var updateSql =
                 "update mytable " +
@@ -37,8 +37,30 @@ namespace ConcurrencyProblem
                                 "limit 1) " +
                 $"where {nameof(MyEntity.Id)} = {_myEntity.Id};";
 
-            db.Database.ExecuteSqlRaw(updateSql);
-            db.SaveChanges();
+            if (useAdvisoryLocks)
+            {
+                var sqlLock = $"SELECT pg_advisory_lock({GetAdvisoryLockKey()});";
+                db.Database.ExecuteSqlRaw(sqlLock);
+            }
+            try
+            {
+                db.Database.ExecuteSqlRaw(updateSql);
+            }
+            finally
+            {
+                if (useAdvisoryLocks)
+                {
+                    var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey()});";
+                    db.Database.ExecuteSqlRaw(sqlUnlock);
+                }
+            }
+        }
+
+        private int GetAdvisoryLockKey()
+        {
+            int sum = _myEntity.ColA == "a" ? 1 : 2;
+            sum += _myEntity.ColB == "a" ? 0 : 10;
+            return sum;
         }
     }
 }

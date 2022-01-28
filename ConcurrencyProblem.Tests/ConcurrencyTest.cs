@@ -12,45 +12,69 @@ namespace ConcurrencyProblem.Tests
         [TestMethod]
         public void TestMethod()
         {
+            TestMethod(false);
+        }
+
+        [TestMethod]
+        public void TestMethodAdvisoryLocks()
+        {
+            TestMethod(true);
+        }
+
+
+        private async void TestMethod(bool useAdvisoryLocks)
+        {
+            var counter = 100;
             var possibleValues = new[] { "a", "b" };
             var rnd = new Random();
-            var db = new MyDbContext();
-            db.Database.EnsureCreated();
-
-            Parallel.For(1, 1000, (index, state) =>
+            using (var dbMain = new MyDbContext())
             {
-                using (var db = new MyDbContext())
+                dbMain.Database.EnsureCreated();
+
+                Parallel.For(1, counter, (index, state) =>
                 {
-                    for (int i = 0; i < 1000; i++)
+                    using (var db = new MyDbContext())
                     {
-                        var insertBeforeTransaction = rnd.Next() % 2 == 0;
-                        var valueColA = possibleValues[rnd.Next(0, 2)];
-                        var valueColB = possibleValues[rnd.Next(0, 2)];
-                        MyClass insertedRow = null;
-                        if (insertBeforeTransaction)
+                        for (int i = 0; i < counter; i++)
                         {
-                            insertedRow = new MyClass(db, valueColA, valueColB);
+                            var insertBeforeTransaction = rnd.Next() % 2 == 0;
+                            var valueColA = possibleValues[rnd.Next(0, 2)];
+                            var valueColB = possibleValues[rnd.Next(0, 2)];
+                            MyClass insertedRow = null;
+                            if (insertBeforeTransaction)
+                            {
+                                insertedRow = new MyClass(db, valueColA, valueColB);
+                            }
+
+                            var transaction = db.Database.BeginTransaction();
+
+                            if (!insertBeforeTransaction)
+                            {
+                                insertedRow = new MyClass(db, valueColA, valueColB);
+                            }
+
+                            System.Threading.Thread.Sleep(rnd.Next(1000));
+
+
+                            insertedRow.SetMySeqValue(db, useAdvisoryLocks);
+
+                            System.Threading.Thread.Sleep(rnd.Next(1000));
+
+                            transaction.Commit();
                         }
-
-                        var transaction = db.Database.BeginTransaction();
-
-                        if (!insertBeforeTransaction)
-                        {
-                            insertedRow = new MyClass(db, valueColA, valueColB);
-                        }
-
-                        System.Threading.Thread.Sleep(rnd.Next(1000));
-
-
-                        insertedRow.SetMySeqValue(db);
-
-                        transaction.Commit();
                     }
-                }
-            });
+                });
 
-            db.Database.EnsureDeleted();
+                var count = await dbMain.MyTable.CountAsync();
+                
+                Assert.IsTrue(count == counter * counter);
 
+                count = await dbMain.MyTable.CountAsync(x => x.MySeq.HasValue);
+
+                Assert.IsTrue(count == counter * counter);
+
+                dbMain.Database.EnsureDeleted();
+            }
         }
 
 
