@@ -12,14 +12,17 @@ namespace ConcurrencyProblem
     {
         private MyEntity _myEntity;
 
-        public MyClass(MyDbContext db, string valueColA, string valueColB)
+        private List<string> _possibleValues;
+
+        public MyClass(MyDbContext db, string valueColA, string valueColB, List<string> possibleValues)
         {
             _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB }).Entity;
             db.SaveChanges();
-            Console.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}] Thread: {Thread.CurrentThread.ManagedThreadId}");
+            Console.WriteLine($"Row created: {this} Thread: {Thread.CurrentThread.ManagedThreadId}");
+            _possibleValues = possibleValues;
         }
 
-        public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks, List<string> possibleValues)
+        public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks)
         {
             var updateSql =
                 "update mytable " +
@@ -39,7 +42,7 @@ namespace ConcurrencyProblem
 
             if (useAdvisoryLocks)
             {
-                var sqlLock = $"SELECT pg_advisory_lock({GetAdvisoryLockKey(possibleValues)});";
+                var sqlLock = $"SELECT pg_advisory_lock({GetAdvisoryLockKey()});";
                 db.Database.ExecuteSqlRaw(sqlLock);
             }
             try
@@ -50,17 +53,26 @@ namespace ConcurrencyProblem
             {
                 if (useAdvisoryLocks)
                 {
-                    var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey(possibleValues)});";
+                    var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey()});";
                     db.Database.ExecuteSqlRaw(sqlUnlock);
                 }
             }
+
+            db.Entry<MyEntity>(_myEntity).Reload();
+
+            Console.WriteLine($"Updated MySeq: {this}");
         }
 
-        private int GetAdvisoryLockKey(List<string> possibleValues)
+        private int GetAdvisoryLockKey()
         {
-            int sum = possibleValues.IndexOf(_myEntity.ColA) + 1;
-            sum += (possibleValues.IndexOf(_myEntity.ColA) + 1) * 10;
+            int sum = _possibleValues.IndexOf(_myEntity.ColA) + 1;
+            sum += (_possibleValues.IndexOf(_myEntity.ColA) + 1) * 10;
             return sum;
+        }
+
+        public override string ToString()
+        {
+            return $"[{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}|{_myEntity.MySeq}]";
         }
     }
 }

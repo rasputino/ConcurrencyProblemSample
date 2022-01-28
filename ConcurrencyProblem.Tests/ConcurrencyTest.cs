@@ -45,19 +45,19 @@ namespace ConcurrencyProblem.Tests
                             MyClass insertedRow = null;
                             if (insertBeforeTransaction)
                             {
-                                insertedRow = new MyClass(db, valueColA, valueColB);
+                                insertedRow = new MyClass(db, valueColA, valueColB, possibleValues);
                             }
 
                             var transaction = db.Database.BeginTransaction();
 
                             if (!insertBeforeTransaction)
                             {
-                                insertedRow = new MyClass(db, valueColA, valueColB);
+                                insertedRow = new MyClass(db, valueColA, valueColB, possibleValues);
                             }
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 
-                            insertedRow.SetMySeqValue(db, useAdvisoryLocks, possibleValues);
+                            insertedRow.SetMySeqValue(db, useAdvisoryLocks);
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 
