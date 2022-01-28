@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConcurrencyProblem
 {
-    [Table("temporal.mytable")]
+    [Table("mytable")]
     public class MyEntity
     {
         [Key]
