@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace ConcurrencyProblem
         public MyClass(MyDbContext db, string valueColA, string valueColB)
         {
             _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB }).Entity;
+            db.SaveChanges();
+            Debug.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}");
         }
 
         public void SetMySeqValue(MyDbContext db)
