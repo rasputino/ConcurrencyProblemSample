@@ -1,0 +1,38 @@
+name: ConcurrencyProblemTest
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    services:
+        postgres:
+            image: postgres
+            env:
+                POSTGRES_PASSWORD: postgres
+            options: >-
+              --health-cmd pg_isready
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x' ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Display dotnet version
+        run: dotnet --version           
+      - name: Start dependencies (docker-compose)
+        run: docker-compose up -d
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --verbosity normal
+      - name: Test with the dotnet CLI
+        run: dotnet test        

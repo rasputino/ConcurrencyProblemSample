@@ -13,7 +13,7 @@ namespace ConcurrencyProblem
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Server = 127.0.0.1; Port = 5432; Database = myDataBase; User Id = myUsername; Password = myPassword;");
+            optionsBuilder.UseNpgsql("Server = 127.0.0.1; Port = 5432; Database = myDataBase; User Id = postgres; Password = postgres;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
