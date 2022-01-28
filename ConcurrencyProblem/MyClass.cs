@@ -16,7 +16,7 @@ namespace ConcurrencyProblem
         {
             _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB }).Entity;
             db.SaveChanges();
-            Debug.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}");
+            Console.WriteLine($"Row created: {_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}]");
         }
 
         public void SetMySeqValue(MyDbContext db)
