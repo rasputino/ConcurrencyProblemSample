@@ -28,8 +28,6 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Display dotnet version
         run: dotnet --version           
-      - name: Start dependencies (docker-compose)
-        run: docker-compose up -d
       - name: Install dependencies
         run: dotnet restore
       - name: Build
