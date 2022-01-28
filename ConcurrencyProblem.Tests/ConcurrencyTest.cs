@@ -2,7 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.EntityFrameworkCore;
-
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ConcurrencyProblem.Tests
 {
@@ -12,20 +13,20 @@ namespace ConcurrencyProblem.Tests
         [TestMethod]
         public void TestMethod()
         {
-            TestMethod(false);
+            TestMethod(false, new List<string>() { "a", "b" });
         }
 
         [TestMethod]
         public void TestMethodAdvisoryLocks()
         {
-            TestMethod(true);
+            TestMethod(true, new List<string>() { "c", "d" });
         }
 
 
-        private async void TestMethod(bool useAdvisoryLocks)
+        private void TestMethod(bool useAdvisoryLocks, List<string> possibleValues)
         {
+            var possibleValuesCount = possibleValues.Count;
             var counter = 100;
-            var possibleValues = new[] { "a", "b" };
             var rnd = new Random();
             using (var dbMain = new MyDbContext())
             {
@@ -38,8 +39,8 @@ namespace ConcurrencyProblem.Tests
                         for (int i = 0; i < counter; i++)
                         {
                             var insertBeforeTransaction = rnd.Next() % 2 == 0;
-                            var valueColA = possibleValues[rnd.Next(0, 2)];
-                            var valueColB = possibleValues[rnd.Next(0, 2)];
+                            var valueColA = possibleValues[rnd.Next(0, possibleValuesCount)];
+                            var valueColB = possibleValues[rnd.Next(0, possibleValuesCount)];
                             MyClass insertedRow = null;
                             if (insertBeforeTransaction)
                             {
@@ -55,7 +56,6 @@ namespace ConcurrencyProblem.Tests
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 
-
                             insertedRow.SetMySeqValue(db, useAdvisoryLocks);
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
@@ -65,12 +65,8 @@ namespace ConcurrencyProblem.Tests
                     }
                 });
 
-                var count = await dbMain.MyTable.CountAsync();
+                var count = dbMain.MyTable.Count(x => x.MySeq.HasValue && possibleValues.Contains(x.ColA) && possibleValues.Contains(x.ColB));
                 
-                Assert.IsTrue(count == counter * counter);
-
-                count = await dbMain.MyTable.CountAsync(x => x.MySeq.HasValue);
-
                 Assert.IsTrue(count == counter * counter);
 
                 dbMain.Database.EnsureDeleted();

@@ -1,0 +1,33 @@
+version: '3'
+services:
+  web:
+    container_name: 'concurrencyproblem'
+    image: 'concurrencyproblem'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8090:80'
+    depends_on:
+      - 'postgres'
+    networks:
+      - concurrencyproblem-network  
+
+  postgres:
+    ports:
+      - '5432:5432'
+    container_name: concurrencyproblem-postgresql
+    environment:
+      - POSTGRES_PASSWORD=postgresql
+    volumes:
+      - 'concurrencyproblem-postgresql-volume:/var/lib/postgresql/data'
+    image: 'postgres:10.4'
+    networks:
+      - concurrencyproblem-network
+
+volumes:
+  concurrencyproblem-postgresql-volume:
+
+networks:
+  concurrencyproblem-network:
+    driver: bridge
