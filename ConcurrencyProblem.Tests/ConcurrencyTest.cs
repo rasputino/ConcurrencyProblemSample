@@ -30,6 +30,7 @@ namespace ConcurrencyProblem.Tests
             var rnd = new Random();
             using (var dbMain = new MyDbContext())
             {
+                dbMain.Database.EnsureDeleted();
                 dbMain.Database.EnsureCreated();
 
                 Parallel.For(1, counter, (index, state) =>
@@ -56,7 +57,7 @@ namespace ConcurrencyProblem.Tests
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 
-                            insertedRow.SetMySeqValue(db, useAdvisoryLocks);
+                            insertedRow.SetMySeqValue(db, useAdvisoryLocks, possibleValues);
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 

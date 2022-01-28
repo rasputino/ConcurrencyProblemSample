@@ -19,7 +19,7 @@ namespace ConcurrencyProblem
             Console.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}] Thread: {Thread.CurrentThread.ManagedThreadId}");
         }
 
-        public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks)
+        public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks, List<string> possibleValues)
         {
             var updateSql =
                 "update mytable " +
@@ -39,7 +39,7 @@ namespace ConcurrencyProblem
 
             if (useAdvisoryLocks)
             {
-                var sqlLock = $"SELECT pg_advisory_lock({GetAdvisoryLockKey()});";
+                var sqlLock = $"SELECT pg_advisory_lock({GetAdvisoryLockKey(possibleValues)});";
                 db.Database.ExecuteSqlRaw(sqlLock);
             }
             try
@@ -50,16 +50,16 @@ namespace ConcurrencyProblem
             {
                 if (useAdvisoryLocks)
                 {
-                    var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey()});";
+                    var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey(possibleValues)});";
                     db.Database.ExecuteSqlRaw(sqlUnlock);
                 }
             }
         }
 
-        private int GetAdvisoryLockKey()
+        private int GetAdvisoryLockKey(List<string> possibleValues)
         {
-            int sum = _myEntity.ColA == "a" ? 1 : 2;
-            sum += _myEntity.ColB == "a" ? 0 : 10;
+            int sum = possibleValues.IndexOf(_myEntity.ColA) + 1;
+            sum += (possibleValues.IndexOf(_myEntity.ColA) + 1) * 10;
             return sum;
         }
     }
