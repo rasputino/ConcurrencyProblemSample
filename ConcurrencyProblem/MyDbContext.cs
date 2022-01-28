@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ConcurrencyProblem
 {
@@ -15,7 +16,7 @@ namespace ConcurrencyProblem
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql("Server = 127.0.0.1; Port = 5432; Database = myDataBase; User Id = postgres; Password = postgres;");
-            optionsBuilder.LogTo(message => Debug.WriteLine(message));
+            optionsBuilder.LogTo(message => Debug.WriteLine(message), LogLevel.Information).EnableDetailedErrors().EnableSensitiveDataLogging();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

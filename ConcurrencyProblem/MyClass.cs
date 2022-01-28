@@ -16,7 +16,7 @@ namespace ConcurrencyProblem
         {
             _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB }).Entity;
             db.SaveChanges();
-            Console.WriteLine($"Row created: {_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}]");
+            Console.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}]");
         }
 
         public void SetMySeqValue(MyDbContext db)
@@ -35,7 +35,7 @@ namespace ConcurrencyProblem
                                 $"where {nameof(MyEntity.ColA)} = '{_myEntity.ColA}' and {nameof(MyEntity.ColB)} = '{_myEntity.ColB}' and {nameof(MyEntity.MySeq)} is not null)) " +
                                 "order by newval desc " +
                                 "limit 1) " +
-                $"where id = {_myEntity.Id};";
+                $"where {nameof(MyEntity.Id)} = {_myEntity.Id};";
 
             db.Database.ExecuteSqlRaw(updateSql);
             db.SaveChanges();
