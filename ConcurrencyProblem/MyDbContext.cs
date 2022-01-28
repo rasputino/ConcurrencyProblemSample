@@ -15,7 +15,10 @@ namespace ConcurrencyProblem
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Server = 127.0.0.1; Port = 5432; Database = myDataBase; User Id = postgres; Password = postgres;").UseLowerCaseNamingConvention();
+            optionsBuilder.UseNpgsql("Server = 127.0.0.1; Port = 5432; Database = myDataBase; User Id = postgres; Password = postgres;Include Error Detail=true;")
+                .UseLowerCaseNamingConvention()
+                .EnableDetailedErrors()
+                .EnableSensitiveDataLogging();
             //optionsBuilder.LogTo(message => Debug.WriteLine(message), LogLevel.Information).EnableDetailedErrors().EnableSensitiveDataLogging();
         }
 

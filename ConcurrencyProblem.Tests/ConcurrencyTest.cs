@@ -13,17 +13,23 @@ namespace ConcurrencyProblem.Tests
         [TestMethod]
         public void TestMethod()
         {
-            TestMethod(false, new List<string>() { "a", "b" });
+            TestMethod(MyClass.LockType.None, new List<string>() { "a", "b" });
         }
 
         [TestMethod]
         public void TestMethodAdvisoryLocks()
         {
-            TestMethod(true, new List<string>() { "c", "d" });
+            TestMethod(MyClass.LockType.PgAdvisoryLock, new List<string>() { "c", "d" });
+        }
+
+        [TestMethod]
+        public void TestMethodExclusiveLock()
+        {
+            TestMethod(MyClass.LockType.ExclusiveLock, new List<string>() { "e", "f" });
         }
 
 
-        private void TestMethod(bool useAdvisoryLocks, List<string> possibleValues)
+        private void TestMethod(MyClass.LockType lockType, List<string> possibleValues)
         {
             var possibleValuesCount = possibleValues.Count;
             var counter = 100;
@@ -57,7 +63,7 @@ namespace ConcurrencyProblem.Tests
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 
-                            insertedRow.SetMySeqValue(db, useAdvisoryLocks);
+                            insertedRow.SetMySeqValue(db, lockType);
 
                             System.Threading.Thread.Sleep(rnd.Next(1000));
 

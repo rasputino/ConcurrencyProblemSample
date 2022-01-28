@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace ConcurrencyProblem
 {
     public class MyClass
     {
+        public enum LockType
+        {
+            None,
+            PgAdvisoryLock,
+            ExclusiveLock
+        }
+
+
         private MyEntity _myEntity;
 
         private List<string> _possibleValues;
@@ -22,7 +24,7 @@ namespace ConcurrencyProblem
             _possibleValues = possibleValues;
         }
 
-        public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks)
+        public void SetMySeqValue(MyDbContext db, LockType lockType)
         {
             var updateSql =
                 "update mytable " +
@@ -40,21 +42,32 @@ namespace ConcurrencyProblem
                                 "limit 1) " +
                 $"where {nameof(MyEntity.Id)} = {_myEntity.Id};";
 
-            if (useAdvisoryLocks)
+            switch (lockType)
             {
-                var sqlLock = $"SELECT pg_advisory_lock({GetAdvisoryLockKey()});";
-                db.Database.ExecuteSqlRaw(sqlLock);
+                case LockType.PgAdvisoryLock:
+                    var sqlLockAdvisory = $"SELECT pg_advisory_lock({GetAdvisoryLockKey()});";
+                    db.Database.ExecuteSqlRaw(sqlLockAdvisory);
+                    break;
+                case LockType.ExclusiveLock:
+                    var sqlLockExclusive = "LOCK TABLE mytable IN ACCESS EXCLUSIVE MODE;";
+                    db.Database.ExecuteSqlRaw(sqlLockExclusive);
+                    break;
             }
+
             try
             {
                 db.Database.ExecuteSqlRaw(updateSql);
             }
             finally
             {
-                if (useAdvisoryLocks)
+                switch (lockType)
                 {
-                    var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey()});";
-                    db.Database.ExecuteSqlRaw(sqlUnlock);
+                    case LockType.PgAdvisoryLock:
+                        var sqlUnlock = $"SELECT pg_advisory_unlock({GetAdvisoryLockKey()});";
+                        db.Database.ExecuteSqlRaw(sqlUnlock);
+                        break;
+                    case LockType.ExclusiveLock:
+                        break;
                 }
             }
 
