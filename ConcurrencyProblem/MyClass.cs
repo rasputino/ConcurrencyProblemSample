@@ -16,7 +16,7 @@ namespace ConcurrencyProblem
         {
             _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB }).Entity;
             db.SaveChanges();
-            Console.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}]");
+            Console.WriteLine($"Row created: [{_myEntity.Id}|{_myEntity.ColA}|{_myEntity.ColB}] Thread: {Thread.CurrentThread.ManagedThreadId}");
         }
 
         public void SetMySeqValue(MyDbContext db, bool useAdvisoryLocks)

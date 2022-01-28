@@ -12,4 +12,7 @@ RUN dotnet build
 
 FROM build-env AS testrunner
 WORKDIR /app/ConcurrencyProblem.Tests
+
+CMD ["dotnet", "--version"]
+
 CMD ["dotnet", "test", "--no-restore"]
