@@ -28,6 +28,7 @@ namespace ConcurrencyProblem.Tests
                         if (insertBeforeTransaction)
                         {
                             insertedRow = new MyClass(db, valueColA, valueColB);
+                            db.SaveChanges();
                         }
 
                         var transaction = db.Database.BeginTransaction();
@@ -35,6 +36,7 @@ namespace ConcurrencyProblem.Tests
                         if (!insertBeforeTransaction)
                         {
                             insertedRow = new MyClass(db, valueColA, valueColB);
+                            db.SaveChanges();
                         }
 
                         System.Threading.Thread.Sleep(rnd.Next(1000));

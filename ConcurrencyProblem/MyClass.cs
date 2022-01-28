@@ -35,6 +35,7 @@ namespace ConcurrencyProblem
                 $"where id = {_myEntity.Id};";
 
             db.Database.ExecuteSqlRaw(updateSql);
+            db.SaveChanges();
         }
     }
 }
