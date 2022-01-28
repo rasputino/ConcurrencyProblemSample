@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrencyProblem", "ConcurrencyProblem\ConcurrencyProblem.csproj", "{69275115-3416-45F8-B007-69C6E2C5DDAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrencyProblem.Tests", "ConcurrencyProblem.Tests\ConcurrencyProblem.Tests.csproj", "{749A5967-8CE9-4E22-ABC6-3997363AE977}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69275115-3416-45F8-B007-69C6E2C5DDAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69275115-3416-45F8-B007-69C6E2C5DDAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69275115-3416-45F8-B007-69C6E2C5DDAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69275115-3416-45F8-B007-69C6E2C5DDAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{749A5967-8CE9-4E22-ABC6-3997363AE977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{749A5967-8CE9-4E22-ABC6-3997363AE977}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{749A5967-8CE9-4E22-ABC6-3997363AE977}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{749A5967-8CE9-4E22-ABC6-3997363AE977}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {05B23D02-9134-48FC-91D7-8FE7B0928D5C}
+	EndGlobalSection
+EndGlobal
