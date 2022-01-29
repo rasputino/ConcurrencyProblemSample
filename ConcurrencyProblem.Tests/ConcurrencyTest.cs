@@ -14,6 +14,11 @@ namespace ConcurrencyProblem.Tests
         [TestMethod]
         public void TestMethod()
         {
+            using (var dbMain = new MyDbContext())
+            {
+                dbMain.Database.EnsureDeleted();
+                dbMain.Database.EnsureCreated();
+            }
             TestMethod(MyClass.LockType.None, new List<string>() { "a", "b" });
         }
 
@@ -51,8 +56,8 @@ namespace ConcurrencyProblem.Tests
             {
                 Debug.WriteLine(dbMain.Database.GetDbConnection().ConnectionString);
 
-                dbMain.Database.EnsureDeleted();
-                dbMain.Database.EnsureCreated();
+                //dbMain.Database.EnsureDeleted();
+                //dbMain.Database.EnsureCreated();
 
                 Parallel.For(1, counter, (index, state) =>
                 {
@@ -81,11 +86,11 @@ namespace ConcurrencyProblem.Tests
                                 insertedRow = new MyClass(db, valueColA, valueColB, possibleValues);
                             }
 
-                            System.Threading.Thread.Sleep(rnd.Next(1000));
+                            System.Threading.Thread.Sleep(rnd.Next(100));
 
                             insertedRow.SetMySeqValue(db, lockType);
 
-                            System.Threading.Thread.Sleep(rnd.Next(1000));
+                            System.Threading.Thread.Sleep(rnd.Next(100));
 
                             transaction.Commit();
                         }

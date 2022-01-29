@@ -15,7 +15,11 @@ namespace ConcurrencyProblem
         [Required]
         public string ColB { get; set; }
 
+        [Required]
+        public DateTime TimeStamp { get; set; }
+
         public int? MySeq { get; set; }
+
 
     }
 }

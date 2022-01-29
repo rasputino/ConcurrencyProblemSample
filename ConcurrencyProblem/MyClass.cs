@@ -20,7 +20,7 @@ namespace ConcurrencyProblem
 
         public MyClass(MyDbContext db, string valueColA, string valueColB, List<string> possibleValues)
         {
-            _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB }).Entity;
+            _myEntity = db.MyTable.Add(new MyEntity() { ColA = valueColA, ColB = valueColB, TimeStamp = DateTime.UtcNow }).Entity;
             db.SaveChanges();
             Console.WriteLine($"Row created: {this} Thread: {Thread.CurrentThread.ManagedThreadId}");
             _possibleValues = possibleValues;
@@ -43,6 +43,7 @@ namespace ConcurrencyProblem
                                 "order by newval desc " +
                                 "limit 1) " +
                 $"where {nameof(MyEntity.Id)} = {_myEntity.Id};";
+
             if (lockType == LockType.ForUpdate)
             {
                 updateSql = "update mytable " +
