@@ -9,7 +9,8 @@ namespace ConcurrencyProblem
             None,
             PgAdvisoryLock,
             ExclusiveLock,
-            ForUpdate
+            ForUpdate,
+            SerializableTransaction
         }
 
 
@@ -45,7 +46,7 @@ namespace ConcurrencyProblem
             if (lockType == LockType.ForUpdate)
             {
                 updateSql = "update mytable " +
-                                $"set myseq = (SELECT CASE WHEN EXISTS (SELECT 1 FROM mytable WHERE cola = '{_myEntity.ColA}' and colb = '{_myEntity.ColB}' and myseq is not null limit 1) THEN (Select suma from (SELECT myseq + 1 as suma FROM mytable WHERE id <> {_myEntity.Id} AND cola = '{_myEntity.ColA}' and colb = '{_myEntity.ColB}' order by myseq is null desc, myseq desc for update) as subc limit 1) ELSE 1 END) " +
+                                $"set myseq = (SELECT CASE WHEN EXISTS (SELECT 1 FROM mytable WHERE cola = '{_myEntity.ColA}' and colb = '{_myEntity.ColB}' and myseq is not null limit 1) THEN (Select suma from (SELECT myseq + 1 as suma FROM mytable WHERE id <> {_myEntity.Id} AND cola = '{_myEntity.ColA}' and colb = '{_myEntity.ColB}' order by myseq is null asc, myseq desc for update) as subc limit 1) ELSE 1 END) " +
                                 $"where id = {_myEntity.Id}; ";
             }
 

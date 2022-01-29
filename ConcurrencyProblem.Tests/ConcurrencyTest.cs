@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace ConcurrencyProblem.Tests
 {
@@ -34,6 +35,12 @@ namespace ConcurrencyProblem.Tests
             TestMethod(MyClass.LockType.ForUpdate, new List<string>() { "g", "h" });
         }
 
+        [TestMethod]
+        public void TestMethodSerializableTransaction()
+        {
+            TestMethod(MyClass.LockType.SerializableTransaction, new List<string>() { "i", "k" });
+        }
+
 
         private void TestMethod(MyClass.LockType lockType, List<string> possibleValues)
         {
@@ -42,6 +49,8 @@ namespace ConcurrencyProblem.Tests
             var rnd = new Random();
             using (var dbMain = new MyDbContext())
             {
+                Debug.WriteLine(dbMain.Database.GetDbConnection().ConnectionString);
+
                 dbMain.Database.EnsureDeleted();
                 dbMain.Database.EnsureCreated();
 
@@ -61,6 +70,11 @@ namespace ConcurrencyProblem.Tests
                             }
 
                             var transaction = db.Database.BeginTransaction();
+
+                            if(lockType == MyClass.LockType.SerializableTransaction)
+                            {
+                                db.Database.ExecuteSqlRaw("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;");
+                            }
 
                             if (!insertBeforeTransaction)
                             {
@@ -82,7 +96,7 @@ namespace ConcurrencyProblem.Tests
                 
                 Assert.IsTrue(count == counter * counter);
 
-                dbMain.Database.EnsureDeleted();
+                //dbMain.Database.EnsureDeleted();
             }
         }
 
