@@ -28,6 +28,12 @@ namespace ConcurrencyProblem.Tests
             TestMethod(MyClass.LockType.ExclusiveLock, new List<string>() { "e", "f" });
         }
 
+        [TestMethod]
+        public void TestMethodForUpdate()
+        {
+            TestMethod(MyClass.LockType.ForUpdate, new List<string>() { "g", "h" });
+        }
+
 
         private void TestMethod(MyClass.LockType lockType, List<string> possibleValues)
         {

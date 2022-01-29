@@ -8,7 +8,8 @@ namespace ConcurrencyProblem
         {
             None,
             PgAdvisoryLock,
-            ExclusiveLock
+            ExclusiveLock,
+            ForUpdate
         }
 
 
@@ -41,6 +42,12 @@ namespace ConcurrencyProblem
                                 "order by newval desc " +
                                 "limit 1) " +
                 $"where {nameof(MyEntity.Id)} = {_myEntity.Id};";
+            if (lockType == LockType.ForUpdate)
+            {
+                updateSql = "update mytable " +
+                                $"set myseq = (SELECT CASE WHEN EXISTS (SELECT 1 FROM mytable WHERE cola = '{_myEntity.ColA}' and colb = '{_myEntity.ColB}' and myseq is not null limit 1) THEN (Select suma from (SELECT myseq + 1 as suma FROM mytable WHERE id <> {_myEntity.Id} AND cola = '{_myEntity.ColA}' and colb = '{_myEntity.ColB}' order by myseq is null desc, myseq desc for update) as subc limit 1) ELSE 1 END) " +
+                                $"where id = {_myEntity.Id}; ";
+            }
 
             switch (lockType)
             {
@@ -73,7 +80,7 @@ namespace ConcurrencyProblem
 
             db.Entry<MyEntity>(_myEntity).Reload();
 
-            Console.WriteLine($"Updated MySeq: {this}");
+            Console.WriteLine($"Updated MySeq: {this} Thread: {Thread.CurrentThread.ManagedThreadId}");
         }
 
         private int GetAdvisoryLockKey()
