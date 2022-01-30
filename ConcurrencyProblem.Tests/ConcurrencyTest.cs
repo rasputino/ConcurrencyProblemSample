@@ -14,11 +14,11 @@ namespace ConcurrencyProblem.Tests
         [TestMethod]
         public void TestMethod()
         {
-            //using (var dbMain = new MyDbContext())
-            //{
-            //    dbMain.Database.EnsureDeleted();
-            //    dbMain.Database.EnsureCreated();
-            //}
+            using (var dbMain = new MyDbContext())
+            {
+                dbMain.Database.EnsureDeleted();
+                dbMain.Database.EnsureCreated();
+            }
             TestMethod(MyClass.LockType.None, new List<string>() { "a", "b" });
         }
 
@@ -68,8 +68,8 @@ namespace ConcurrencyProblem.Tests
             {
                 Debug.WriteLine(dbMain.Database.GetDbConnection().ConnectionString);
 
-                dbMain.Database.EnsureDeleted();
-                dbMain.Database.EnsureCreated();
+                //dbMain.Database.EnsureDeleted();
+                //dbMain.Database.EnsureCreated();
 
                 if (lockType == MyClass.LockType.Sequence)
                 {
@@ -116,7 +116,15 @@ namespace ConcurrencyProblem.Tests
 
                             System.Threading.Thread.Sleep(rnd.Next(100));
 
-                            transaction.Commit();
+                            if(rnd.Next(10) == 0)//some of them could fail
+                            {
+                                transaction.Rollback();
+                            }
+                            else
+                            {
+                                transaction.Commit();
+                            }
+
                         }
                     }
                 });
@@ -124,6 +132,13 @@ namespace ConcurrencyProblem.Tests
                 var count = dbMain.MyTable.Count(x => x.MySeq.HasValue && possibleValues.Contains(x.ColA) && possibleValues.Contains(x.ColB));
                 Console.WriteLine($"{count} vs {counter * counter}");
                 Assert.IsTrue(count == counter * counter);
+
+                var numberAndCountsMatch = dbMain.MyTable
+                    .Where(x => possibleValues.Contains(x.ColA) && possibleValues.Contains(x.ColB))
+                    .GroupBy(x => new { x.ColA, x.ColB })
+                    .Select(g =>new {g.Key, count = g.Count(), maxMySeq = g.Max(c => c.MySeq)});
+
+                Assert.IsTrue(numberAndCountsMatch.All(c => c.maxMySeq == c.count));
 
                 //dbMain.Database.EnsureDeleted();
             }
