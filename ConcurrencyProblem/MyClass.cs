@@ -12,7 +12,8 @@ namespace ConcurrencyProblem
             ExclusiveLock,
             ForUpdate,
             SerializableTransaction,
-            Optimistic
+            Optimistic,
+            Sequence
         }
 
 
@@ -72,6 +73,10 @@ namespace ConcurrencyProblem
                 {
                     SetMySeqValue(db);
                 }
+                else if(lockType == LockType.Sequence) 
+                {
+                    Sequence(db);
+                }
                 else
                 {
                     db.Database.ExecuteSqlRaw(updateSql);
@@ -93,6 +98,12 @@ namespace ConcurrencyProblem
             db.Entry<MyEntity>(_myEntity).Reload();
 
             Console.WriteLine($"Updated MySeq: {this} Thread: {Thread.CurrentThread.ManagedThreadId}");
+        }
+
+        private void Sequence(MyDbContext db)
+        {
+            var sequenceName = _myEntity.ColA + _myEntity.ColB;
+            db.Database.ExecuteSqlRaw($"UPDATE mytable SET myseq = nextval('{sequenceName}') WHERE id = {_myEntity.Id};");
         }
 
         private void SetMySeqValue(MyDbContext db, int depth = 0)

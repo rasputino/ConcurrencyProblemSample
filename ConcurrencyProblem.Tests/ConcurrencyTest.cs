@@ -52,6 +52,12 @@ namespace ConcurrencyProblem.Tests
             TestMethod(MyClass.LockType.Optimistic, new List<string>() { "j", "l" });
         }
 
+        [TestMethod]
+        public void TestMethodSequence()
+        {
+            TestMethod(MyClass.LockType.Sequence, new List<string>() { "m", "o" });
+        }
+
 
         private void TestMethod(MyClass.LockType lockType, List<string> possibleValues)
         {
@@ -65,7 +71,19 @@ namespace ConcurrencyProblem.Tests
                 dbMain.Database.EnsureDeleted();
                 dbMain.Database.EnsureCreated();
 
-                Parallel.For(1, counter, (index, state) =>
+                if (lockType == MyClass.LockType.Sequence)
+                {
+                    foreach (var pos1 in possibleValues)
+                    {
+                        foreach (var pos2 in possibleValues)
+                        {
+                            var sequenceName = pos1 + pos2;
+                            dbMain.Database.ExecuteSqlRaw($"CREATE SEQUENCE IF NOT EXISTS {sequenceName};");
+                        }
+                    }
+                }
+
+                Parallel.For(0, counter, (index, state) =>
                 {
                     using (var db = new MyDbContext())
                     {
@@ -104,7 +122,7 @@ namespace ConcurrencyProblem.Tests
                 });
 
                 var count = dbMain.MyTable.Count(x => x.MySeq.HasValue && possibleValues.Contains(x.ColA) && possibleValues.Contains(x.ColB));
-                
+                Console.WriteLine($"{count} vs {counter * counter}");
                 Assert.IsTrue(count == counter * counter);
 
                 //dbMain.Database.EnsureDeleted();
