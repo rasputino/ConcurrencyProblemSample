@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace ConcurrencyProblem
 {
@@ -10,7 +11,8 @@ namespace ConcurrencyProblem
             PgAdvisoryLock,
             ExclusiveLock,
             ForUpdate,
-            SerializableTransaction
+            SerializableTransaction,
+            Optimistic
         }
 
 
@@ -65,7 +67,15 @@ namespace ConcurrencyProblem
 
             try
             {
-                db.Database.ExecuteSqlRaw(updateSql);
+
+                if (lockType == LockType.Optimistic)
+                {
+                    SetMySeqValue(db);
+                }
+                else
+                {
+                    db.Database.ExecuteSqlRaw(updateSql);
+                }
             }
             finally
             {
@@ -83,6 +93,44 @@ namespace ConcurrencyProblem
             db.Entry<MyEntity>(_myEntity).Reload();
 
             Console.WriteLine($"Updated MySeq: {this} Thread: {Thread.CurrentThread.ManagedThreadId}");
+        }
+
+        private void SetMySeqValue(MyDbContext db, int depth = 0)
+        {
+            //if(depth > 10)
+            //{
+            //    Debug.WriteLine(this);
+            //}
+            try
+            {
+                var siguienteMySeq = db.MyTable
+                    .Where(e => e.ColA == _myEntity.ColA && e.ColB == _myEntity.ColB && e.MySeq.HasValue)
+                    .OrderByDescending(e => e.MySeq)
+                    .Take(1).Select(e => e.MySeq).FirstOrDefault();
+
+                _myEntity.MySeq = siguienteMySeq.HasValue ? siguienteMySeq.Value + 1 : 1;
+                
+                db.SaveChanges();
+            }
+            //catch (Exception ex) when (ex is DbUpdateConcurrencyException || ex is DbUpdateException)
+            //{
+            //    SetMySeqValue(db);//infine loop?
+            //}
+            catch (Exception ex)
+            {
+                if (ex is DbUpdateConcurrencyException || ex is DbUpdateException)
+                {
+                    Debug.WriteLine($"Error updating: {this} Thread: {Thread.CurrentThread.ManagedThreadId}");
+                    Thread.Sleep(300);
+                    db.Entry(_myEntity).Reload();
+                    SetMySeqValue(db, ++depth);
+                }
+                else
+                {
+                    Console.WriteLine(ex.ToString());
+                    throw;
+                }
+            }
         }
 
         private int GetAdvisoryLockKey()

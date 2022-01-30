@@ -17,9 +17,18 @@ namespace ConcurrencyProblem
         {
             optionsBuilder.UseNpgsql("Server = 127.0.0.1; Port = 5432; Database = myDataBase; User Id = postgres; Password = postgres;Include Error Detail=true;")
                 .UseLowerCaseNamingConvention()
+                //.LogTo(message => Debug.WriteLine(message), LogLevel.Information)
+                //.LogTo(message => LogUpdate(message))
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging();
-            //optionsBuilder.LogTo(message => Debug.WriteLine(message), LogLevel.Information).EnableDetailedErrors().EnableSensitiveDataLogging();
+        }
+
+        private void LogUpdate(string msg)
+        {
+            if (msg.Contains("UPDATE"))
+            {
+                Debug.Write(msg);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,6 +36,7 @@ namespace ConcurrencyProblem
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<MyEntity>()
+                .UseXminAsConcurrencyToken()
                 .HasIndex(p => new { p.ColA, p.ColB, p.MySeq }).IsUnique();
 
         }

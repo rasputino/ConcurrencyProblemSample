@@ -14,11 +14,11 @@ namespace ConcurrencyProblem.Tests
         [TestMethod]
         public void TestMethod()
         {
-            using (var dbMain = new MyDbContext())
-            {
-                dbMain.Database.EnsureDeleted();
-                dbMain.Database.EnsureCreated();
-            }
+            //using (var dbMain = new MyDbContext())
+            //{
+            //    dbMain.Database.EnsureDeleted();
+            //    dbMain.Database.EnsureCreated();
+            //}
             TestMethod(MyClass.LockType.None, new List<string>() { "a", "b" });
         }
 
@@ -46,6 +46,12 @@ namespace ConcurrencyProblem.Tests
             TestMethod(MyClass.LockType.SerializableTransaction, new List<string>() { "i", "k" });
         }
 
+        [TestMethod]
+        public void TestMethodOptimistic()
+        {
+            TestMethod(MyClass.LockType.Optimistic, new List<string>() { "j", "l" });
+        }
+
 
         private void TestMethod(MyClass.LockType lockType, List<string> possibleValues)
         {
@@ -56,8 +62,8 @@ namespace ConcurrencyProblem.Tests
             {
                 Debug.WriteLine(dbMain.Database.GetDbConnection().ConnectionString);
 
-                //dbMain.Database.EnsureDeleted();
-                //dbMain.Database.EnsureCreated();
+                dbMain.Database.EnsureDeleted();
+                dbMain.Database.EnsureCreated();
 
                 Parallel.For(1, counter, (index, state) =>
                 {

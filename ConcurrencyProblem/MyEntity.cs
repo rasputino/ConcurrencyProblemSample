@@ -18,6 +18,8 @@ namespace ConcurrencyProblem
         [Required]
         public DateTime TimeStamp { get; set; }
 
+        public uint xmin { get; set; }
+
         public int? MySeq { get; set; }
 
 
